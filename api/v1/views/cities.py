@@ -8,7 +8,7 @@ all default RestFul API actions.
 from api.v1.views import app_views
 from flask import jsonify, request, abort
 from models import storage
-from api.v1.views.states import get, delete, post, put
+from api.v1.views import get, delete, post, put
 
 
 @app_views.route('/cities/<city_id>',
