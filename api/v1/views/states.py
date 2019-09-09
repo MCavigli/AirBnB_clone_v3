@@ -15,52 +15,69 @@ from models.state import State
 @app_views.route('/states/<state_id>',
                  strict_slashes=False,
                  methods=['GET', 'DELETE', 'PUT'])
-def get_state(state_id=None):
+def crud(state_id=None):
     """Returns GET, DELETE, PUT, POST methods"""
+    data = {"cls": State, "str": "State", "_id": state_id}
     if request.method == 'GET':
-        if state_id is None:
-            objs = storage.all("State").values()
-            _list = []
-            for obj in objs:
-                _list.append(obj.to_dict())
-            return jsonify(_list), 200
-        else:
-            state = storage.get("State", state_id)
-            if state:
-                return jsonify(state.to_dict()), 200
-            abort(404)
+        return get(data)
     elif request.method == 'DELETE':
-        state = storage.get("State", state_id)
-        if state:
-            storage.delete(state)
-            storage.save()
-            storage.reload()
-            return jsonify({}), 200
-        else:
-            abort(404)
+        return delete(data)
     elif request.method == 'POST':
-        if not request.content_type == 'application/json':
-            return jsonify({'error': 'Not a JSON'}), 400
-        req = request.get_json()
-        if 'name' not in req:
-            return jsonify({'error': 'Missing name'}), 400
-        new_state = State(**req)
-        new_state.save()
-        objs = storage.all("State").values()
-        for obj in objs:
-            if obj.name == req['name']:
-                return jsonify(obj.to_dict()), 201
+        return post(data)
     elif request.method == "PUT":
-        if not request.content_type == 'application/json':
-            return jsonify({'error': 'Not a JSON'}), 400
-        req = request.get_json()
-        ignore = ['created_at', 'updated_at', 'id']
-        state = storage.get("State", state_id)
-        if state:
-            for k, v in req.items():
-                if k not in ignore:
-                    setattr(state, k, v)
-                    storage.save()
-                    storage.reload()
-                    return jsonify(state.to_dict()), 200
+        return put(data)
+
+
+def get(data):
+    if data["_id"] is None:
+        objs = storage.all(data["str"]).values()
+        _list = []
+        for obj in objs:
+            _list.append(obj.to_dict())
+        return jsonify(_list), 200
+    else:
+        found = storage.get(data["str"], data["_id"])
+        if found:
+            return jsonify(found.to_dict()), 200
         abort(404)
+
+
+def delete(data):
+    found = storage.get(data['str'], data['_id'])
+    if found:
+        storage.delete(found)
+        storage.save()
+        return jsonify({}), 200
+    else:
+        abort(404)
+
+
+def post(data):
+    if not request.content_type == 'application/json':
+        return jsonify({'error': 'Not a JSON'}), 400
+    req = request.get_json()
+    if 'name' not in req:
+        return jsonify({'error': 'Missing name'}), 400
+    new = data['cls'](**req)
+    new.save()
+    objs = storage.all(data['str']).values()
+    for obj in objs:
+        if obj.name == req['name']:
+            return jsonify(obj.to_dict()), 201
+
+
+def put(data):
+    if not request.content_type == 'application/json':
+        return jsonify({'error': 'Not a JSON'}), 400
+    req = request.get_json()
+    ignore = ['created_at', 'updated_at', 'id']
+    found = storage.get(data['str'], data['_id'])
+    if found:
+        for k, v in req.items():
+            if k not in ignore:
+                setattr(found, k, v)
+        storage.save()
+        return jsonify(found.to_dict()), 200
+    else:
+        abort(404)
+
