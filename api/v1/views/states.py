@@ -24,18 +24,14 @@ def crud(state_id=None):
             'POST': post,
             'PUT': put
             }
-    for k, v in methods.items():
-        if request.method == k:
-            return v(data)
+    if request.method in methods:
+        return methods[request.method](data)
 
 
 def get(data):
     if data["_id"] is None:
-        objs = storage.all(data["str"]).values()
-        _list = []
-        for obj in objs:
-            _list.append(obj.to_dict())
-        return jsonify(_list), 200
+        return jsonify([x.to_dict() for x in
+                       storage.all(data["str"]).values()]), 200
     else:
         found = storage.get(data["str"], data["_id"])
         if found:
@@ -54,23 +50,20 @@ def delete(data):
 
 
 def post(data):
-    if not request.content_type == 'application/json':
-        return jsonify({'error': 'Not a JSON'}), 400
     req = request.get_json()
+    if req is None:
+        return jsonify({'error': 'Not a JSON'}), 400
     if 'name' not in req:
         return jsonify({'error': 'Missing name'}), 400
     new = data['cls'](**req)
     new.save()
-    objs = storage.all(data['str']).values()
-    for obj in objs:
-        if obj.name == req['name']:
-            return jsonify(obj.to_dict()), 201
+    return jsonify(new.to_dict()), 201
 
 
 def put(data):
-    if not request.content_type == 'application/json':
-        return jsonify({'error': 'Not a JSON'}), 400
     req = request.get_json()
+    if req is None:
+        return jsonify({'error': 'Not a JSON'}), 400
     ignore = ['created_at', 'updated_at', 'id']
     found = storage.get(data['str'], data['_id'])
     if found:
@@ -81,4 +74,3 @@ def put(data):
         return jsonify(found.to_dict()), 200
     else:
         abort(404)
-
