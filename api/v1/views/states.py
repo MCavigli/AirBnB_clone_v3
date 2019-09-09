@@ -42,7 +42,7 @@ def get(data):
         if parent:
             return jsonify([p.to_dict() for p in
                            getattr(parent, data['p_child'])]), 200
-            abort(404)
+        abort(404)
     if data['_id']:
         found = storage.get(data['str'], data['_id'])
         if found:
