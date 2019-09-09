@@ -18,14 +18,15 @@ from models.state import State
 def crud(state_id=None):
     """Returns GET, DELETE, PUT, POST methods"""
     data = {"cls": State, "str": "State", "_id": state_id}
-    if request.method == 'GET':
-        return get(data)
-    elif request.method == 'DELETE':
-        return delete(data)
-    elif request.method == 'POST':
-        return post(data)
-    elif request.method == "PUT":
-        return put(data)
+    methods = {
+            'GET': get,
+            'DELETE': delete,
+            'POST': post,
+            'PUT': put
+            }
+    for k, v in methods.items():
+        if request.method == k:
+            return v(data)
 
 
 def get(data):
