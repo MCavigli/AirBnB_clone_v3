@@ -17,7 +17,11 @@ from models.state import State
                  methods=['GET', 'DELETE', 'PUT'])
 def states_crud(state_id=None):
     """Returns GET, DELETE, PUT, POST methods"""
-    data = {"cls": State, "str": "State", "_id": state_id}
+    data = {"cls": State,
+            "str": "State",
+            "_id": state_id,
+            "check": ['name'],
+            "ignore": ['created_at', 'updated_at', 'id']}
     methods = {
             'GET': get,
             'DELETE': delete,
@@ -53,8 +57,9 @@ def post(data):
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
-    if 'name' not in req:
-        return jsonify({'error': 'Missing name'}), 400
+    for c in data['check']:
+        if c not in req:
+            return jsonify({'error': 'Missing {}'.format(c)}), 400
     new = data['cls'](**req)
     new.save()
     return jsonify(new.to_dict()), 201
@@ -64,11 +69,10 @@ def put(data):
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
-    ignore = ['created_at', 'updated_at', 'id']
     found = storage.get(data['str'], data['_id'])
     if found:
         for k, v in req.items():
-            if k not in ignore:
+            if k not in data['ignore']:
                 setattr(found, k, v)
         storage.save()
         return jsonify(found.to_dict()), 200
