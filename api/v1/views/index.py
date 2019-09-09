@@ -1,19 +1,20 @@
 #!/usr/bin/python3
+
+"""
+Routes for app_views
+"""
+
+
 from api.v1.views import app_views
 from flask import Flask, jsonify
 from models import storage
-from models.amenity import Amenity
-from models.city import City
-from models.place import Place
-from models.review import Review
-from models.state import State
-from models.user import User
 
 
 @app_views.route('/status', methods=['GET'])
 def json_ret():
     """ returns a JSON string on an object """
-    return jsonify({"status": "OK"})
+    return jsonify({"status": "OK"}), 200
+
 
 @app_views.route('/stats', methods=['GET'])
 def obj_num():
@@ -26,4 +27,4 @@ def obj_num():
         "states": storage.count('State'),
         "users": storage.count('User')
     }
-    return jsonify(objs)
+    return jsonify(objs), 200
