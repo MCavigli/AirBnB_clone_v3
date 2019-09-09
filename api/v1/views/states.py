@@ -15,7 +15,7 @@ from models.state import State
 @app_views.route('/states/<state_id>',
                  strict_slashes=False,
                  methods=['GET', 'DELETE', 'PUT'])
-def crud(state_id=None):
+def states_crud(state_id=None):
     """Returns GET, DELETE, PUT, POST methods"""
     data = {"cls": State, "str": "State", "_id": state_id}
     methods = {
