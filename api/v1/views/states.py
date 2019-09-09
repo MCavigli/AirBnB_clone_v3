@@ -1,14 +1,16 @@
 #!/usr/bin/python3
 
-"""
+'''
 Create a new view for State objects that handles
 all default RestFul API actions.
-"""
+'''
 
 from api.v1.views import app_views
 from flask import jsonify, request, abort
 from models import storage
 from models.state import State
+from models.amenity import Amenity
+from models.city import City
 
 
 @app_views.route('/states', strict_slashes=False, methods=['GET', 'POST'])
@@ -16,12 +18,14 @@ from models.state import State
                  strict_slashes=False,
                  methods=['GET', 'DELETE', 'PUT'])
 def states_crud(state_id=None):
-    """Returns GET, DELETE, PUT, POST methods"""
-    data = {"cls": State,
-            "str": "State",
-            "_id": state_id,
-            "check": ['name'],
-            "ignore": ['created_at', 'updated_at', 'id']}
+    '''Returns GET, DELETE, PUT, POST methods'''
+    data = {
+            'str': 'State',
+            '_id': state_id,
+            'p_id': None,
+            'check': ['name'],
+            'ignore': ['created_at', 'updated_at', 'id']
+            }
     methods = {
             'GET': get,
             'DELETE': delete,
@@ -33,14 +37,20 @@ def states_crud(state_id=None):
 
 
 def get(data):
-    if data["_id"] is None:
-        return jsonify([x.to_dict() for x in
-                       storage.all(data["str"]).values()]), 200
-    else:
-        found = storage.get(data["str"], data["_id"])
+    if data['p_id']:
+        parent = storage.get(data['p_str'], data['p_id'])
+        if parent:
+            return jsonify([p.to_dict() for p in
+                           getattr(parent, data['p_child'])]), 200
+            abort(404)
+    if data['_id']:
+        found = storage.get(data['str'], data['_id'])
         if found:
             return jsonify(found.to_dict()), 200
         abort(404)
+    else:
+        return jsonify([x.to_dict() for x in
+                       storage.all(data['str']).values()]), 200
 
 
 def delete(data):
@@ -60,7 +70,15 @@ def post(data):
     for c in data['check']:
         if c not in req:
             return jsonify({'error': 'Missing {}'.format(c)}), 400
-    new = data['cls'](**req)
+    if data['p_id']:
+        parent = storage.get(data['p_str'], data['p_id'])
+        if parent:
+            req[data['p_prop']] = data['p_id']
+            new = eval(data['str'])(**req)
+            new.save()
+            return jsonify(new.to_dict()), 201
+        abort(404)
+    new = eval(data['str'])(**req)
     new.save()
     return jsonify(new.to_dict()), 201
 
