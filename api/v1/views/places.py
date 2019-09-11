@@ -35,3 +35,50 @@ def place_crud(city_id=None, place_id=None):
             }
     if request.method in methods:
         return methods[request.method](data)
+
+
+@app_views.route('/places_search',
+                 strict_slashes=False,
+                 methods=['POST'])
+def search_crud():
+    ''' '''
+    from models import storage
+    print("here")
+    req = request.get_json()
+    if req is None:
+        return jsonify({'error': 'Not a JSON'}), 400
+    val = storage.all("Place").values()
+    if req == {} or (not req['states'] and
+                     not req['cities'] and
+                     not req['amenities']):
+        return jsonify([x.to_dict() for x in val]), 200
+    state_list = []
+    for s_id in req['states']:
+        found = storage.get("State", s_id)
+        if found:
+            state_list.append(found)
+    city_list = []
+    for state in state_list:
+        city_list.extend(state.cities)
+    for c_id in req['cities']:
+        found = storage.get("City", c_id)
+        if found and found not in city_list:
+            city_list.append(found)
+    places = []
+    for cities in city_list:
+        places.extend(cities.places)
+    amenity_list = []
+    for a_id in req['amenities']:
+        found = storage.get("Amenity", a_id)
+        if found:
+            amenity_list.append(found)
+    result = []
+    if req['amenities'] == []:
+        return jsonify([x.to_dict() for x in places]), 200
+    for place in places:
+        for amenity in amenity_list:
+            if amenity not in place.amenities:
+                break
+        if len(place.amenities) == len(amenity_list):
+            result.append(place)
+    return jsonify([x.to_dict() for x in result]), 200
