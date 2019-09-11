@@ -22,7 +22,7 @@ def user_crud(user_id=None):
             '_id': user_id,
             'p_id': None,
             'check': ['email', 'password'],
-            'ignore': ['created_at', 'updated_at', 'id']}
+            'ignore': ['email', 'created_at', 'updated_at', 'id']}
     methods = {
             'GET': get,
             'DELETE': delete,
