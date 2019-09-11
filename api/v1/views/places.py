@@ -43,7 +43,6 @@ def place_crud(city_id=None, place_id=None):
 def search_crud():
     ''' '''
     from models import storage
-    print("here")
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
@@ -57,6 +56,7 @@ def search_crud():
         found = storage.get("State", s_id)
         if found:
             state_list.append(found)
+    # print([x.name for x in state_list])
     city_list = []
     for state in state_list:
         city_list.extend(state.cities)
@@ -64,10 +64,11 @@ def search_crud():
         found = storage.get("City", c_id)
         if found and found not in city_list:
             city_list.append(found)
+    # print([x.name for x in city_list])
     places = []
     for cities in city_list:
         places.extend(cities.places)
-    if not hasattr(req, 'amenities') or req['amenities'] == []:
+    if not req.get('amenities') or req['amenities'] == []:
         return jsonify([x.to_dict() for x in places]), 200
     amenity_list = []
     result = []
@@ -75,11 +76,13 @@ def search_crud():
         found = storage.get("Amenity", a_id)
         if found:
             amenity_list.append(found)
+    # print([x.name for x in amenity_list])
     for place in places:
+        copy = place
         for amenity in amenity_list:
-            if amenity not in place.amenities:
+            if amenity not in copy.amenities:
                 break
-        result.append(place)
-#        if len(place.amenities) == len(amenity_list):
-
+        if len(place.amenities) == len(amenity_list):
+            result.append(place)
+    # print([x.name for x in result])
     return jsonify([x.to_dict() for x in result]), 200
