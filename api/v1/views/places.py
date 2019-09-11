@@ -81,6 +81,7 @@ def search_crud():
         for amenity in amenity_list:
             if amenity not in place.amenities:
                 break
-        if len(place.amenities) == len(amenity_list):
-            result.append(place)
+        result.append(place)
+#        if len(place.amenities) == len(amenity_list):
+
     return jsonify([x.to_dict() for x in result]), 200
