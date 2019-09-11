@@ -78,7 +78,7 @@ class DBStorage:
     def get(self, cls, id):
         """ retrieves one object """
         c = classes[cls]
-        if c == None:
+        if c is None:
             return None
         for v in self.all(c).values():
             if v.id == id:
@@ -87,11 +87,11 @@ class DBStorage:
 
     def count(self, cls=None):
         """ count number of objects in storage """
-        if cls == None:
+        if cls is None:
             return len(self.all())
         else:
             c = classes[cls]
-            if c == None:
+            if c is None:
                 return len(self.all())
         # TODO: what if entered non-existant class?
         return len(self.all(c))

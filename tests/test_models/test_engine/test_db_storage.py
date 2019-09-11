@@ -73,21 +73,12 @@ class TestFileStorage(unittest.TestCase):
     @classmethod
     def setUp(self):
         """Set up MySQLdb"""
-        self.db = MySQLdb.connect(host="localhost",
-                                  port=3306,
-                                  user='hbnb_test',
-                                  passwd='hbnb_test_pwd',
-                                  db='hbnb_test_db',
-                                  charset='utf8')
-        self.cur = self.db.cursor()
-        self.storage = DBStorage()
-        self.storage.reload()
+        pass
 
     @classmethod
     def tearDown(self):
         """Tear down MySQLdb"""
-        self.cur.close()
-        self.db.close()
+        pass
 
     """Test the FileStorage class"""
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
