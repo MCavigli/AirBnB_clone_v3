@@ -48,9 +48,11 @@ def search_crud():
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
     val = storage.all("Place").values()
-    if req == {} or (not req['states'] and
-                     not req['cities'] and
-                     not req['amenities']):
+    if req == {}:
+        return jsonify([x.to_dict() for x in val]), 200
+    if (not hasattr(req, 'states') or req['states'] == []) and\
+       (not hasattr(req, 'cities') or req['cities'] == []) and\
+       (not hasattr(req, 'amenities') or req['amenities'] == []):
         return jsonify([x.to_dict() for x in val]), 200
     state_list = []
     for s_id in req['states']:
@@ -67,14 +69,14 @@ def search_crud():
     places = []
     for cities in city_list:
         places.extend(cities.places)
+    if not hasattr(req, 'amenities') or req['amenities'] == []:
+        return jsonify([x.to_dict() for x in places]), 200
     amenity_list = []
+    result = []
     for a_id in req['amenities']:
         found = storage.get("Amenity", a_id)
         if found:
             amenity_list.append(found)
-    result = []
-    if req['amenities'] == []:
-        return jsonify([x.to_dict() for x in places]), 200
     for place in places:
         for amenity in amenity_list:
             if amenity not in place.amenities:
