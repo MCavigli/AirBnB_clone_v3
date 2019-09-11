@@ -44,6 +44,9 @@ def post(data):
         if c not in req:
             return jsonify({'error': 'Missing {}'.format(c)}), 400
     if data['p_id']:
+        if 'user_id' in data['check']:
+            if not storage.get('User', req['user_id']):
+                abort(404)
         parent = storage.get(data['p_str'], data['p_id'])
         if parent:
             req[data['p_prop']] = data['p_id']
