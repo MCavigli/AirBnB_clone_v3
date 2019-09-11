@@ -50,9 +50,7 @@ def search_crud():
     val = storage.all("Place").values()
     if req == {}:
         return jsonify([x.to_dict() for x in val]), 200
-    if (not hasattr(req, 'states') or req['states'] == []) and\
-       (not hasattr(req, 'cities') or req['cities'] == []) and\
-       (not hasattr(req, 'amenities') or req['amenities'] == []):
+    if all(x == 0 for x in [len(v) for k, v in req.items()]):
         return jsonify([x.to_dict() for x in val]), 200
     state_list = []
     for s_id in req['states']:
