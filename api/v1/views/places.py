@@ -85,11 +85,10 @@ def search_crud():
     # print([x.name for x in amenity_list])
     # print(place_list)
     for place in place_list:
-        copy = place
-        for amenity in amenity_list:
-            if amenity not in copy.amenities:
-                break
-        if len(place.amenities) == len(amenity_list):
+        required_amens = [a.id for a in place.amenities]
+        # print(required_amens)
+        # print(all([x in required_amens for x in amenity_list]))
+        if all([x in required_amens for x in amenity_list]):
             result.append(place)
     # print([x.name for x in result])
     return jsonify([x.to_dict() for x in result]), 200
