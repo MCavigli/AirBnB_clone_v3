@@ -8,6 +8,7 @@ all default RestFul API actions.
 from api.v1.views import app_views
 from flask import jsonify, request, abort
 from api.v1.views import get, delete, post, put
+import os
 
 
 @app_views.route('/places/<place_id>',
@@ -81,14 +82,12 @@ def search_crud():
     for a_id in req['amenities']:
         found = storage.get("Amenity", a_id)
         if found:
-            amenity_list.add(found)
-    # print([x.name for x in amenity_list])
+            amenity_list.add(found.id)
     # print(place_list)
     for place in place_list:
         required_amens = [a.id for a in place.amenities]
-        # print(required_amens)
-        # print(all([x in required_amens for x in amenity_list]))
-        if all([x in required_amens for x in amenity_list]):
+        # print([x in amenity_list for x in required_amens])
+        if required_amens and all([x in amenity_list for x in required_amens]):
             result.append(place)
     # print([x.name for x in result])
     return jsonify([x.to_dict() for x in result]), 200
