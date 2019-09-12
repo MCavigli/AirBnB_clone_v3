@@ -10,6 +10,7 @@ app_views = Blueprint('app_views', __name__, url_prefix='/api/v1')
 
 
 def get(data):
+    ''' Sends HTTP GET request '''
     if data['p_id']:
         parent = storage.get(data['p_str'], data['p_id'])
         if parent:
@@ -27,6 +28,7 @@ def get(data):
 
 
 def delete(data):
+    ''' Sends HTTP DELETE request '''
     found = storage.get(data['str'], data['_id'])
     if found:
         storage.delete(found)
@@ -37,6 +39,7 @@ def delete(data):
 
 
 def post(data):
+    ''' Sends HTTP POST request '''
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
@@ -60,6 +63,7 @@ def post(data):
 
 
 def put(data):
+    ''' Sends HTTP PUT request '''
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
