@@ -51,33 +51,40 @@ def search_crud():
         return jsonify([x.to_dict() for x in val]), 200
     if all(x == 0 for x in [len(v) for k, v in req.items()]):
         return jsonify([x.to_dict() for x in val]), 200
-    state_list = []
-    for s_id in req['states']:
-        found = storage.get("State", s_id)
-        if found:
-            state_list.append(found)
+    state_list = set()
+    states = req.get('states')
+    if states:
+        for s_id in states:
+            found = storage.get("State", s_id)
+            if found:
+                state_list.add(found)
     # print([x.name for x in state_list])
-    city_list = []
+    city_list = set()
     for state in state_list:
-        city_list.extend(state.cities)
-    for c_id in req['cities']:
-        found = storage.get("City", c_id)
-        if found and found not in city_list:
-            city_list.append(found)
+        for city in state.cities:
+            city_list.add(city)
+    cities = req.get('cities')
+    if cities:
+        for c_id in req['cities']:
+            found = storage.get("City", c_id)
+            if found:
+                city_list.add(found)
     # print([x.name for x in city_list])
-    places = []
-    for cities in city_list:
-        places.extend(cities.places)
-    if not req.get('amenities') or req['amenities'] == []:
-        return jsonify([x.to_dict() for x in places]), 200
-    amenity_list = []
+    place_list = set()
+    for city in city_list:
+        for places in city.places:
+            place_list.add(places)
+    if not req.get('amenities') or len(req['amenities']) == 0:
+        return jsonify([x.to_dict() for x in place_list]), 200
+    amenity_list = set()
     result = []
     for a_id in req['amenities']:
         found = storage.get("Amenity", a_id)
         if found:
-            amenity_list.append(found)
+            amenity_list.add(found)
     # print([x.name for x in amenity_list])
-    for place in places:
+    # print(place_list)
+    for place in place_list:
         copy = place
         for amenity in amenity_list:
             if amenity not in copy.amenities:
