@@ -32,6 +32,7 @@ def place_amenity_crud(place_id=None, amenity_id=None):
 
 
 def get(data):
+    '''Sends HTTP GET request'''
     found = storage.get("Place", data["p_id"])
     if not found:
         abort(404)
@@ -39,6 +40,7 @@ def get(data):
 
 
 def delete(data):
+    '''Sends HTTP DELETE request'''
     found_place = storage.get("Place", data["p_id"])
     if not found_place:
         abort(404)
@@ -53,6 +55,7 @@ def delete(data):
 
 
 def post(data):
+    '''Sends HTTP POST request'''
     found_place = storage.get("Place", data["p_id"])
     if not found_place:
         abort(404)
