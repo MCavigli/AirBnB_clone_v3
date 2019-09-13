@@ -47,25 +47,17 @@ def search_crud():
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
-    all_places = storage.all("Place").values()
+    places = storage.all("Place").values()
     if req == {}:
-        return jsonify([x.to_dict() for x in all_places]), 200
-    if all(x == 0 for x in [len(v) for k, v in req.items()]):
-        return jsonify([x.to_dict() for x in all_places]), 200
+        return jsonify([x.to_dict() for x in places]), 200
     state_list = check_and_get(req, 'states', 'State')
     city_list = populate(state_list, 'cities') |\
         check_and_get(req, 'cities', 'City')
-    place_list = populate(city_list, 'places')
-    if len(city_list) == 0:
-        place_list = all_places
+    place_list = populate(city_list, 'places') if len(city_list) else places
     if not req.get('amenities') or len(req['amenities']) == 0:
         return jsonify([x.to_dict() for x in place_list]), 200
-    amenity_list = set()
     result = []
-    for a_id in req['amenities']:
-        found = storage.get("Amenity", a_id)
-        if found:
-            amenity_list.add(found.id)
+    amenity_list = check_and_get(req, 'amenities', 'Amenity', True)
     for place in place_list:
         required_amens = [a.id for a in place.amenities]
         if required_amens and all([x in required_amens for x in amenity_list]):
@@ -86,7 +78,9 @@ def check_and_get(req, cls_str, cls, id_only=False):
     if cls_array:
         for _id in cls_array:
             found = storage.get(cls, _id)
-            if found:
+            if id_only:
+                _set.add(found.id)
+            elif found:
                 _set.add(found)
     return _set
 
