@@ -55,14 +55,13 @@ def search_crud():
     state_list = get(req, 'states', "State")
     print("** Selected states: **")
     print([x.name for x in state_list])
-    city_list = populate(state_list, 'cities') | get(req, 'cities', 'City')
+    city_list = populate(state_list, 'cities')
+    city_list_2 = get(req, 'cities', 'City')
+    city_list = city_list.union(city_list_2)
     print("** Selected cities: **")
     print([x.name for x in city_list])
-    # place_list = populate(city_list, 'places') if len(city_list) else places
-    place_list = populate(city_list, 'places')
-    if len(city_list) == 0:
-        print("City list is empty!")
-        place_list = places
+    print([x.name for x in city_list_2])
+    place_list = populate(city_list, 'places') if len(city_list) else places
     print("** Current places: **")
     print([p.name for p in place_list])
     if not req.get('amenities') or len(req['amenities']) == 0:
@@ -100,6 +99,7 @@ def get(req, cls_str, cls, id_only=False):
     if cls_array:
         for _id in cls_array:
             found = storage.get(cls, _id)
+            print(found)
             if id_only:
                 _set.add(found.id)
             else:
