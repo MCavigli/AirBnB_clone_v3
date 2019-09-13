@@ -56,23 +56,12 @@ def search_crud():
     place_list = populate(city_list, 'places') if len(city_list) else places
     if not req.get('amenities') or len(req['amenities']) == 0:
         return jsonify([x.to_dict() for x in place_list]), 200
-    result = []
     amenity_list = check_and_get(req, 'amenities', 'Amenity', True)
-    for place in place_list:
-        required_amens = [a.id for a in place.amenities]
-        if required_amens and all([x in required_amens for x in amenity_list]):
-            result.append(place.id)
-    final = [storage.get("Place", x) for x in result]
-    super_final = []
-    for f in final:
-        d = f.to_dict()
-        del d['amenities']
-        super_final.append(d)
-    return jsonify([x for x in super_final]), 200
+    return filter_results(place_list, amenity_list)
 
 
 def check_and_get(req, cls_str, cls, id_only=False):
-    ''' '''
+    ''' Checks db for class according to list of id's '''
     _set = set()
     cls_array = req.get(cls_str)
     if cls_array:
@@ -86,9 +75,29 @@ def check_and_get(req, cls_str, cls, id_only=False):
 
 
 def populate(parent_list, child_prop):
-    ''' '''
+    ''' Populate subclasses of a parent list of classes'''
     _set = set()
     for p in parent_list:
         for child in getattr(p, child_prop):
             _set.add(child)
     return _set
+
+
+def filter_results(place_list, amenity_list):
+    ''' Filter results of place list with specified amenities '''
+    filtered = []
+    for place in place_list:
+        required_amens = [a.id for a in place.amenities]
+        if required_amens and all([x in required_amens for x in amenity_list]):
+            filtered.append(place)
+    return jsonify([x for x in remove_subclass(filtered, 'amenities')]), 200
+
+
+def remove_subclass(_list, subclass):
+    ''' Remove subclasses for serialization '''
+    res = []
+    for _ in _list:
+        d = _.to_dict()
+        del d[subclass]
+        res.append(d)
+    return res
