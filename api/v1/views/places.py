@@ -52,7 +52,17 @@ def search_crud():
         return jsonify([x.to_dict() for x in all_places]), 200
     if all(x == 0 for x in [len(v) for k, v in req.items()]):
         return jsonify([x.to_dict() for x in all_places]), 200
-    state_list = get(req, 'states', 'State')
+    state_list = check_and_get(req, 'states', 'State')
+    """
+    state_list = set()
+    states = req.get('states')
+    if states:
+        for s_id in states:
+            found = storage.get("State", s_id)
+            if found:
+                state_list.add(found)
+    """
+    print([s for s in state_list])
     city_list = set()
     for state in state_list:
         for city in state.cities:
@@ -90,7 +100,7 @@ def search_crud():
     return jsonify([x for x in super_final]), 200
 
 
-def get(req, cls_str, cls, id_only=False):
+def check_and_get(req, cls_str, cls, id_only=False):
     ''' '''
     _set = set()
     cls_array = req.get(cls_str)
