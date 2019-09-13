@@ -8,6 +8,7 @@ all default RestFul API actions.
 from api.v1.views import app_views
 from flask import jsonify, request, abort
 from api.v1.views import get, delete, post, put
+from models import storage
 import os
 
 
@@ -43,7 +44,6 @@ def place_crud(city_id=None, place_id=None):
                  methods=['POST'])
 def search_crud():
     ''' Filters places by state, city, and amenities '''
-    from models import storage
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
