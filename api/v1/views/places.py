@@ -8,7 +8,6 @@ all default RestFul API actions.
 from api.v1.views import app_views
 from flask import jsonify, request, abort
 from api.v1.views import get, delete, post, put
-from models import storage
 import os
 
 
@@ -44,23 +43,32 @@ def place_crud(city_id=None, place_id=None):
                  methods=['POST'])
 def search_crud():
     ''' Filters places by state, city, and amenities '''
+    from models import storage
     req = request.get_json()
     if req is None:
         return jsonify({'error': 'Not a JSON'}), 400
-    places = storage.all("Place").values()
+    all_places = storage.all("Place").values()
     if req == {}:
-        return jsonify([x.to_dict() for x in places]), 200
+        return jsonify([x.to_dict() for x in all_places]), 200
     if all(x == 0 for x in [len(v) for k, v in req.items()]):
-        return jsonify([x.to_dict() for x in places]), 200
-    state_list = get(req, 'states', "State")
-    print("** Selected states: **")
-    print([x.name for x in state_list])
-    print("** Selected cities: **")
-    city_list = get(req, 'cities', 'City') | populate(state_list, 'cities')
-    place_list = populate(city_list, 'places') if len(city_list) > 0 else places
-    print([x.name for x in city_list])
-    print("** Current places: **")
-    print([p.name for p in place_list])
+        return jsonify([x.to_dict() for x in all_places]), 200
+    state_list = get(req, 'states', 'State')
+    city_list = set()
+    for state in state_list:
+        for city in state.cities:
+            city_list.add(city)
+    cities = req.get('cities')
+    if cities:
+        for c_id in req['cities']:
+            found = storage.get("City", c_id)
+            if found:
+                city_list.add(found)
+    place_list = set()
+    for city in city_list:
+        for places in city.places:
+            place_list.add(places)
+    if len(city_list) == 0:
+        place_list = all_places
     if not req.get('amenities') or len(req['amenities']) == 0:
         return jsonify([x.to_dict() for x in place_list]), 200
     amenity_list = set()
@@ -69,13 +77,6 @@ def search_crud():
         found = storage.get("Amenity", a_id)
         if found:
             amenity_list.add(found.id)
-    # amenities = req.get('amenities')
-    # if not amenities or len(amenities) == 0:
-    #    return jsonify([x.to_dict() for x in place_list]), 200
-    # amenity_list = get(req, 'amenities', "Amenity", True)
-    print("** Current amenities: **")
-    print([p for p in amenity_list])
-    result = []
     for place in place_list:
         required_amens = [a.id for a in place.amenities]
         if required_amens and all([x in required_amens for x in amenity_list]):
@@ -110,8 +111,3 @@ def populate(parent_list, child_prop):
         for child in getattr(p, child_prop):
             _set.add(child)
     return _set
-
-
-def filter():
-    ''' '''
-    pass
