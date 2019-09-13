@@ -53,7 +53,6 @@ def search_crud():
     if all(x == 0 for x in [len(v) for k, v in req.items()]):
         return jsonify([x.to_dict() for x in all_places]), 200
     state_list = get(req, 'states', 'State')
-    print([s.name for s in state_list])
     city_list = set()
     for state in state_list:
         for city in state.cities:
@@ -98,9 +97,7 @@ def get(req, cls_str, cls, id_only=False):
     if cls_array:
         for _id in cls_array:
             found = storage.get(cls, _id)
-            if id_only:
-                _set.add(found.id)
-            elif found:
+            if found:
                 _set.add(found)
     return _set
 
