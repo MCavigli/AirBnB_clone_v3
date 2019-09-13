@@ -61,23 +61,23 @@ def search_crud():
     place_list = populate(city_list, 'places') if len(city_list) else places
     print("** Current places: **")
     print([p.name for p in place_list])
-    amenities = req.get('amenities')
-    print("**")
-    print(amenities)
-    print(len(amenities))
-    print("**")
-    if not amenities or len(amenities) == 0:
+    if not req.get('amenities') or len(req['amenities']) == 0:
         return jsonify([x.to_dict() for x in place_list]), 200
-    amenity_list = get(req, 'amenities', "Amenity", True)
+    amenity_list = set()
+    result = []
+    for a_id in req['amenities']:
+        found = storage.get("Amenity", a_id)
+        if found:
+            amenity_list.add(found.id)
+    # amenities = req.get('amenities')
+    # if not amenities or len(amenities) == 0:
+    #    return jsonify([x.to_dict() for x in place_list]), 200
+    # amenity_list = get(req, 'amenities', "Amenity", True)
     print("** Current amenities: **")
     print([p for p in amenity_list])
     result = []
     for place in place_list:
         required_amens = [a.id for a in place.amenities]
-        print("\t" + "Amenity list:")
-        print("\t" + str([x for x in required_amens]))
-        print("\tRequirements fulfilled: ")
-        print("\t" + str([x in required_amens for x in amenity_list]))
         if required_amens and all([x in required_amens for x in amenity_list]):
             result.append(place.id)
     final = [storage.get("Place", x) for x in result]
