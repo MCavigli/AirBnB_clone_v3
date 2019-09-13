@@ -58,7 +58,11 @@ def search_crud():
     city_list = populate(state_list, 'cities') | get(req, 'cities', 'City')
     print("** Selected cities: **")
     print([x.name for x in city_list])
-    place_list = populate(city_list, 'places') if len(city_list) else places
+    # place_list = populate(city_list, 'places') if len(city_list) else places
+    place_list = populate(city_list, 'places')
+    if len(city_list) == 0:
+        print("City list is empty!")
+        place_list = places
     print("** Current places: **")
     print([p.name for p in place_list])
     if not req.get('amenities') or len(req['amenities']) == 0:
