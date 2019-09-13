@@ -53,30 +53,9 @@ def search_crud():
     if all(x == 0 for x in [len(v) for k, v in req.items()]):
         return jsonify([x.to_dict() for x in all_places]), 200
     state_list = check_and_get(req, 'states', 'State')
-    """
-    state_list = set()
-    states = req.get('states')
-    if states:
-        for s_id in states:
-            found = storage.get("State", s_id)
-            if found:
-                state_list.add(found)
-    """
-    print([s for s in state_list])
-    city_list = set()
-    for state in state_list:
-        for city in state.cities:
-            city_list.add(city)
-    cities = req.get('cities')
-    if cities:
-        for c_id in req['cities']:
-            found = storage.get("City", c_id)
-            if found:
-                city_list.add(found)
-    place_list = set()
-    for city in city_list:
-        for places in city.places:
-            place_list.add(places)
+    city_list = populate(state_list, 'cities') |\
+        check_and_get(req, 'cities', 'City')
+    place_list = populate(city_list, 'places')
     if len(city_list) == 0:
         place_list = all_places
     if not req.get('amenities') or len(req['amenities']) == 0:
