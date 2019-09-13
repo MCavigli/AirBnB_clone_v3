@@ -42,7 +42,7 @@ def place_crud(city_id=None, place_id=None):
                  strict_slashes=False,
                  methods=['POST'])
 def search_crud():
-    ''' '''
+    ''' Filters places by state, city, and amenities '''
     from models import storage
     req = request.get_json()
     if req is None:
@@ -59,8 +59,6 @@ def search_crud():
             found = storage.get("State", s_id)
             if found:
                 state_list.add(found)
-    print("** Selected states: **")
-    print([x.name for x in state_list])
     city_list = set()
     for state in state_list:
         for city in state.cities:
@@ -71,17 +69,12 @@ def search_crud():
             found = storage.get("City", c_id)
             if found:
                 city_list.add(found)
-    print("** Selected cities: **")
-    print([x.name for x in city_list])
     place_list = set()
     for city in city_list:
         for places in city.places:
             place_list.add(places)
     if len(city_list) == 0:
-        print("City list is empty!")
         place_list = all_places
-    print("** Current places: **")
-    print([p.name for p in place_list])
     if not req.get('amenities') or len(req['amenities']) == 0:
         return jsonify([x.to_dict() for x in place_list]), 200
     amenity_list = set()
@@ -90,15 +83,8 @@ def search_crud():
         found = storage.get("Amenity", a_id)
         if found:
             amenity_list.add(found.id)
-    print("** Selected amenities: **")
-    print([x for x in amenity_list])
     for place in place_list:
-        print("[x] " + place.name)
         required_amens = [a.id for a in place.amenities]
-        print("\t" + "Amenity list:")
-        print("\t" + str([x for x in required_amens]))
-        print("\tRequirements fulfilled: ")
-        print("\t" + str([x in required_amens for x in amenity_list]))
         if required_amens and all([x in required_amens for x in amenity_list]):
             result.append(place.id)
     final = [storage.get("Place", x) for x in result]
